@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:project_rally/src/constants/constants.dart';
+import 'package:project_rally/src/utils/asset/asset_helper.dart';
 import 'home_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -9,14 +12,16 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  
   @override
   void initState() {
     super.initState();
-    _navigateToHome();
+    _navigateToHomeScreen();
   }
 
-  _navigateToHome() async {
-    await Future.delayed(const Duration(seconds: 3));
+  _navigateToHomeScreen() async
+  {
+    await Future.delayed(const Duration(seconds: AppConstants.splashScreenDuration));
 
     if (mounted) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const HomeScreen()));
@@ -24,14 +29,19 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context)
+  {
     return Scaffold(
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Image.asset('assets/images/splash_logo.png'),
-            const Text('My App', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+            SvgPicture.asset(AssetHelper.getSvgPath('splash_logo'), width: 300, height: 300),
+            const Padding(
+              padding: EdgeInsets.only(top: 30),
+              child: Text(AppConstants.appName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+              ),
+            ),
           ],
         ),
       ),
