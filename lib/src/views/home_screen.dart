@@ -14,11 +14,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String? _pdfPath;
-  double _distanceTraveled = 0.0; // Distance in kilometers
-  double? _currentHeading;
+  double _distanceTraveled = 0.0;
   Position? _lastPosition;
   StreamSubscription<Position>? _positionStreamSubscription;
-  StreamSubscription<CompassEvent>? _compassSubscription;
+  Timer? _updateTimer;
+  double _currentHeading = 0.0;
+  Timer? _debounceTimer;
+  late StreamSubscription<CompassEvent> _compassSubscription;
 
   @override
   void initState() {
@@ -29,42 +31,61 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _startTracking() {
     const LocationSettings locationSettings = LocationSettings(
-        accuracy: LocationAccuracy.high,
-        distanceFilter: 1);
+      accuracy: LocationAccuracy.high,
+      distanceFilter: 1,
+    );
+
     _positionStreamSubscription = Geolocator.getPositionStream(
       locationSettings: locationSettings,
     ).listen((Position position) {
-      if (_lastPosition != null) {
-        _distanceTraveled += Geolocator.distanceBetween(
-          _lastPosition!.latitude,
-          _lastPosition!.longitude,
-          position.latitude,
-          position.longitude,
-        ) / 1000; // Convert meters to kilometers
-      }
-      _lastPosition = position;
-      setState(() {});
+      // Debounce to mitigate rapid minor position changes
+      _debounceTimer?.cancel();
+      _debounceTimer = Timer(const Duration(seconds: 1), () {
+        if (_lastPosition != null) {
+          final double distance = Geolocator.distanceBetween(
+            _lastPosition!.latitude,
+            _lastPosition!.longitude,
+            position.latitude,
+            position.longitude,
+          );
+
+          // Apply a minimal movement threshold to filter out GPS noise
+          // For example, only add distance if moved more than 2 meters
+          if (distance > 2) {
+            _distanceTraveled += distance / 1000; // Keeping distance in kilometers
+            _lastPosition = position;
+
+            setState(() {}); // Update UI here
+          }
+        } else {
+          // If _lastPosition is null, just set the current position without adding to _distanceTraveled
+          _lastPosition = position;
+        }
+      });
     });
   }
 
   void _startCompass() {
     _compassSubscription = FlutterCompass.events!.listen((CompassEvent event) {
       if (event.heading != null) {
-        // Normalize the heading to ensure it's within 0 - 360 degrees
         double normalizedHeading = event.heading! % 360;
-
-        // Remove decimal points by converting to int
-        _currentHeading = normalizedHeading.toInt().toDouble(); // Convert to double for consistency
-
-        setState(() {});
+        _currentHeading = normalizedHeading; // Store the latest heading
       }
+    });
+
+    _updateTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
+      setState(() {
+        _currentHeading = _currentHeading.toInt().toDouble();
+      });
     });
   }
 
   @override
   void dispose() {
     _positionStreamSubscription?.cancel();
-    _compassSubscription?.cancel();
+    _debounceTimer?.cancel();
+    _compassSubscription.cancel();
+    _updateTimer?.cancel();
     super.dispose();
   }
 
@@ -86,35 +107,59 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black, // Set background color to black
+        backgroundColor: Colors.black,
         body: Column(
           children: <Widget>[
-            // New displays for distance and cap heading
             Padding(
-              padding: const EdgeInsets.all(30.0), // Adjust the padding as needed
+              padding: const EdgeInsets.all(15.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround, // Space them evenly
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16), // Adjust padding as needed
-                      color: Colors.grey[850], // Adjust the background color as needed
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('${_distanceTraveled.toStringAsFixed(1)} km', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)), // Placeholder value
+                          RichText(
+                            text: TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: _distanceTraveled.toStringAsFixed(1),
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 50,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'Orbitron',
+                                  ),
+                                ),
+                                WidgetSpan(
+                                  child: Transform.translate(
+                                    offset: const Offset(0, -20),
+                                    child: const Text(
+                                      ' km',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'Orbitron',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ),
                     ),
                   ),
                   Expanded(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16), // Adjust padding as needed
-                      color: Colors.grey[850], // Adjust the background color as needed
+                      padding: const EdgeInsets.symmetric(vertical: 16),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('${_currentHeading?.toInt() ?? 'N/A'}°', style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)), // Placeholder value
+                          Text('${_currentHeading.toInt() ?? 'N/A'}°', style: const TextStyle(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold, fontFamily: 'Orbitron')),
                         ],
                       ),
                     ),
@@ -122,12 +167,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            // PDF view and upload button remain unchanged
             Expanded(
               child: _pdfPath == null
                   ? const Center(child: Text('No PDF selected', style: TextStyle(color: Colors.white)))
                   : Padding(
-                padding: const EdgeInsets.only(top: 20, bottom: 30), // Adjusted for visual balance
+                padding: const EdgeInsets.only(bottom: 30),
                 child: PDFView(
                   filePath: _pdfPath,
                 ),
@@ -140,8 +184,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: ElevatedButton(
                   onPressed: pickPDFFile,
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.blue, // Button color
-                    onPrimary: Colors.white, // Text color
+                    primary: Colors.blue,
+                    onPrimary: Colors.white,
                   ),
                   child: const Text('Upload PDF'),
                 ),
