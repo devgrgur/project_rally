@@ -32,16 +32,12 @@ class _SplashScreenState extends State<SplashScreen> {
   Widget build(BuildContext context)
   {
     return Scaffold(
+      backgroundColor: Colors.black,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            SvgPicture.asset(AssetHelper.getSvgPath('splash_logo'), width: 300, height: 300),
-            const Padding(
-              padding: EdgeInsets.only(top: 30),
-              child: Text(AppConstants.appName, style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-              ),
-            ),
+            Image.asset(AssetHelper.getJpgPath('app_logo'), width: 200, height: 200),
           ],
         ),
       ),
