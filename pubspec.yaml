@@ -67,8 +67,7 @@ flutter:
   uses-material-design: true
 
   assets:
-  - assets/svg/splash_logo.svg
-  - assets/images/app_logo.jpg
+  - assets/images/app_logo.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
@@ -80,6 +79,9 @@ flutter:
     - family: Orbitron
       fonts:
         - asset: assets/fonts/Orbitron.ttf
+    - family: OpenSans
+      fonts:
+        - asset: assets/fonts/OpenSans.ttf
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a

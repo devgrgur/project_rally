@@ -37,7 +37,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Image.asset(AssetHelper.getJpgPath('app_logo'), width: 200, height: 200),
+            Image.asset(AssetHelper.getPngPath('app_logo'), width: 200, height: 200),
           ],
         ),
       ),

@@ -8,8 +8,14 @@ class AssetHelper {
     return '$_svgPathPrefix$svgName.svg';
   }
 
+  // Get a jpg path from a svg name.
   static String getJpgPath(String jpgName) {
     return '$_imagePathPrefix$jpgName.jpg';
+  }
+
+  // Get a png path from a svg name.
+  static String getPngPath(String jpgName) {
+    return '$_imagePathPrefix$jpgName.png';
   }
 
 }

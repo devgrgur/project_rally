@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_compass/flutter_compass.dart';
+import 'package:project_rally/src/utils/asset/asset_helper.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -102,6 +103,14 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void resetPDFFile() async {
+
+    setState(() {
+      _pdfPath = null;
+      _distanceTraveled = 0.0;
+    });
+  }
+
   @override
   @override
   Widget build(BuildContext context) {
@@ -110,6 +119,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: Colors.black,
         body: Column(
           children: <Widget>[
+            _pdfPath != null ?
             Padding(
               padding: const EdgeInsets.all(15.0),
               child: Row(
@@ -166,30 +176,61 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-            ),
+            )
+            : const SizedBox.shrink(),
             Expanded(
-              child: _pdfPath == null
-                  ? const Center(child: Text('No PDF selected', style: TextStyle(color: Colors.white)))
-                  : Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: PDFView(
-                  filePath: _pdfPath,
-                ),
+                child: _pdfPath == null
+                    ? Center(child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Image.asset(AssetHelper.getPngPath('app_logo'), height: 200, width: 200),
+                    const Text('No PDF selected, upload one below.', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal, fontFamily: 'OpenSans')),
+                  ],
+                ))
+                    : Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                        color: Colors.grey,
+                        width: 8.0
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: PDFView(filePath: _pdfPath),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.only(bottom: 20, left: 20),
-              child: Align(
-                alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.only(bottom: 20, top: 20),
+              child: _pdfPath == null ?
+              SizedBox(
+                width: double.infinity,
                 child: ElevatedButton(
                   onPressed: pickPDFFile,
                   style: ElevatedButton.styleFrom(
-                    primary: Colors.blue,
-                    onPrimary: Colors.white,
+                    backgroundColor: Colors.white,
                   ),
-                  child: const Text('Upload PDF'),
+                  child: const Text('Upload PDF', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontFamily: 'OpenSans', fontSize: 12)),
                 ),
-              ),
+              )
+              : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Align(
+                    alignment: Alignment.bottomLeft,
+                    child: ElevatedButton(
+                      onPressed: resetPDFFile,
+                      style: ElevatedButton.styleFrom(
+                        shape: const CircleBorder(),
+                        backgroundColor: Colors.transparent,
+                      ),
+                      child: const Icon(Icons.cancel_outlined, color: Colors.red, size: 50),
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomRight,
+                    child: Image.asset(AssetHelper.getPngPath('app_logo'), height: 50, width: 200),
+                  ),
+                ],
+              )
             ),
           ],
         ),
