@@ -103,7 +103,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void resetPDFFile() async {
+  void resetPDFFile(BuildContext context) async {
+    Navigator.of(context).pop();
 
     setState(() {
       _pdfPath = null;
@@ -111,129 +112,182 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _showResetConfirmationDialog(BuildContext context) {
+    String? fileName = _pdfPath?.split('/').last;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirmation'),
+          content: RichText(
+            text: TextSpan(
+              style: const TextStyle(
+                fontSize: 16.0,
+                color: Colors.black,
+              ),
+              children: <TextSpan>[
+                const TextSpan(text: 'Removing roadbook:\n'),
+                TextSpan(
+                  text: '$fileName',
+                  style: const TextStyle(fontWeight: FontWeight.bold), // Bold text style
+                ),
+                const TextSpan(text: '\n\nAre you sure, this will reset your '),
+                const TextSpan(
+                  text: 'distance?',
+                  style: TextStyle(fontWeight: FontWeight.bold), // Bold text style
+                ),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('No'),
+            ),
+            TextButton(
+              onPressed: () {
+                resetPDFFile(context);
+              },
+              child: const Text('Yes'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Colors.black,
-        body: Column(
-          children: <Widget>[
-            _pdfPath != null ?
-            Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          RichText(
-                            text: TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: _distanceTraveled.toStringAsFixed(1),
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 50,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'Orbitron',
-                                  ),
-                                ),
-                                WidgetSpan(
-                                  child: Transform.translate(
-                                    offset: const Offset(0, -20),
-                                    child: const Text(
-                                      ' km',
-                                      style: TextStyle(
+      home: Builder(
+        builder: (context) {
+          return Scaffold(
+            backgroundColor: Colors.black,
+            body: Column(
+              children: <Widget>[
+                _pdfPath != null ?
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              RichText(
+                                text: TextSpan(
+                                  children: [
+                                    TextSpan(
+                                      text: _distanceTraveled.toStringAsFixed(1),
+                                      style: const TextStyle(
                                         color: Colors.white,
+                                        fontSize: 50,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'Orbitron',
                                       ),
                                     ),
-                                  ),
+                                    WidgetSpan(
+                                      child: Transform.translate(
+                                        offset: const Offset(0, -20),
+                                        child: const Text(
+                                          ' km',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'Orbitron',
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('${_currentHeading.toInt()}°', style: const TextStyle(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold, fontFamily: 'Orbitron')),
-                        ],
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text('${_currentHeading.toInt()}°', style: const TextStyle(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold, fontFamily: 'Orbitron')),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                ],
-              ),
-            )
-            : const SizedBox.shrink(),
-            Expanded(
-                child: _pdfPath == null
-                    ? Center(child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Image.asset(AssetHelper.getPngPath('app_logo'), height: 200, width: 200),
-                    const Text('No PDF selected, upload one below.', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal, fontFamily: 'OpenSans')),
-                  ],
-                ))
-                    : Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: Colors.grey,
-                        width: 8.0
-                    ),
-                    borderRadius: BorderRadius.circular(10),
+                )
+                : const SizedBox.shrink(),
+                Expanded(
+                    child: _pdfPath == null
+                        ? Center(child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(AssetHelper.getPngPath('app_logo'), height: 200, width: 200),
+                        const Text('No PDF selected, upload one below.', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.normal, fontFamily: 'OpenSans')),
+                      ],
+                    ))
+                        : Container(
+                      decoration: BoxDecoration(
+                        border: Border.all(
+                            color: Colors.grey,
+                            width: 8.0
+                        ),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: PDFView(filePath: _pdfPath),
                   ),
-                  child: PDFView(filePath: _pdfPath),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20, top: 20),
-              child: _pdfPath == null ?
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: pickPDFFile,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.white,
-                  ),
-                  child: const Text('Upload PDF', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontFamily: 'OpenSans', fontSize: 12)),
                 ),
-              )
-              : Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Align(
-                    alignment: Alignment.bottomLeft,
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20, top: 20),
+                  child: _pdfPath == null ?
+                  SizedBox(
+                    width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: resetPDFFile,
+                      onPressed: pickPDFFile,
                       style: ElevatedButton.styleFrom(
-                        shape: const CircleBorder(),
-                        backgroundColor: Colors.transparent,
+                        backgroundColor: Colors.white,
                       ),
-                      child: const Icon(Icons.cancel_outlined, color: Colors.red, size: 50),
+                      child: const Text('Upload PDF', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontFamily: 'OpenSans', fontSize: 12)),
                     ),
-                  ),
-                  Align(
-                    alignment: Alignment.bottomRight,
-                    child: Image.asset(AssetHelper.getPngPath('app_logo'), height: 50, width: 200),
-                  ),
-                ],
-              )
+                  )
+                  : Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Align(
+                        alignment: Alignment.bottomLeft,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            _showResetConfirmationDialog(context);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            shape: const CircleBorder(),
+                            backgroundColor: Colors.transparent,
+                          ),
+                          child: const Icon(Icons.cancel_outlined, color: Colors.red, size: 50),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Image.asset(AssetHelper.getPngPath('app_logo'), height: 50, width: 200),
+                      ),
+                    ],
+                  )
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        }
       ),
     );
   }
