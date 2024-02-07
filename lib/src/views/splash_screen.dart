@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:project_rally/src/constants/constants.dart';
 import 'package:project_rally/src/utils/asset/asset_helper.dart';
 import 'home_screen.dart';

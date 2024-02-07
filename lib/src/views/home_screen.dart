@@ -169,7 +169,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text('${_currentHeading.toInt() ?? 'N/A'}°', style: const TextStyle(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold, fontFamily: 'Orbitron')),
+                          Text('${_currentHeading.toInt()}°', style: const TextStyle(color: Colors.white, fontSize: 50, fontWeight: FontWeight.bold, fontFamily: 'Orbitron')),
                         ],
                       ),
                     ),

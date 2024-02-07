@@ -6,11 +6,11 @@ class SlidePageRoute<T> extends MaterialPageRoute<T> {
   final Duration customTransitionDuration;
 
   SlidePageRoute({
-    required WidgetBuilder builder,
-    RouteSettings? settings,
+    required super.builder,
+    super.settings,
     this.slideFromLeft = true,
     this.customTransitionDuration = const Duration(milliseconds: AppConstants.slideAnimationDuration),
-  }) : super(builder: builder, settings: settings);
+  });
 
   @override
   Widget buildTransitions(
